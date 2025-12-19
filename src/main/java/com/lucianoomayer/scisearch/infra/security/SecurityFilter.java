@@ -1,5 +1,6 @@
 package com.lucianoomayer.scisearch.infra.security;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.lucianoomayer.scisearch.model.User;
 import com.lucianoomayer.scisearch.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -25,14 +26,20 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var token = this.recoverToken(request);
-        var login = tokenService.validateToken(token);
+        String token = recoverToken(request);
 
-        if(login != null){
-            User user = userRepository.findByEmail(login).orElseThrow(() -> new RuntimeException("User Not Found"));
-            var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-            var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if(token != null){
+            try{
+                String login = tokenService.validateToken(token);
+                User user = userRepository.findByEmail(login).orElseThrow(() -> new RuntimeException("User Not Found"));
+                var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+                var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }catch (JWTVerificationException ex){
+                SecurityContextHolder.clearContext();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
         filterChain.doFilter(request, response);
     }

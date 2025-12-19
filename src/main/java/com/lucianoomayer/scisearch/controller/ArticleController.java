@@ -50,13 +50,13 @@ public class ArticleController {
         String userId = tokenService.validateToken(token);
 
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token inválido");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         try{
             return articleService.saveFavorite(request, userId);
         }catch (DataIntegrityViolationException e){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Artigo já está nos favoritos.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
@@ -86,9 +86,9 @@ public class ArticleController {
         boolean deleted = articleService.deleteFavorite(userId, articleId);
 
         if (deleted) {
-            return ResponseEntity.ok("Artigo removido com sucesso!");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Artigo não encontrado.");
+            return ResponseEntity.noContent().build();
         }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
