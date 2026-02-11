@@ -24,14 +24,16 @@ record ArticleSummaryDTO(
         String externalId,
         String title,
         String url,
-        Integer publicationYear
+        Integer publicationYear,
+        String source
 ){
     public static ArticleSummaryDTO from(Article article){
         return new ArticleSummaryDTO(
                 article.getExternalId(),
                 article.getTitle(),
                 article.getUrl(),
-                article.getPublicationYear()
+                article.getPublicationYear(),
+                article.getSource()
         );
     }
 }
