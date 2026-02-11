@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -35,8 +36,8 @@ public class PubMedService {
                 .flatMap(this::fetchMetaData, 2)
                 .map(this::mapToArticle)
                 .filter(article -> {
-                    if(article.getPublicationDate().isEmpty()) return true;
-                    int year = Integer.parseInt(article.getPublicationDate());
+                    //if(article.getPublicationDate().isEmpty()) return true;
+                    int year = article.getPublicationYear();
                     return (minYear == null || year >= minYear) &&
                             (maxYear == null || year <= maxYear);
                 });
@@ -99,17 +100,15 @@ public class PubMedService {
                 ? dto.title()
                 : null);
 
-        article.setArticleId(dto.pmid());
+        article.setExternalId(dto.pmid());
 
-        article.setArticleUrl(dto.getPubMedUrl());
+        article.setUrl(dto.getPubMedUrl());
 
         article.setAuthors(
                 dto.authors() != null
                         ? dto.authors().stream().map(PubMedArticleDTO.AuthorDTO::name).toList()
                         : List.of()
         );
-
-        article.setAbstractText("");
 
         String year = "";
         if(!dto.pubDate().isEmpty()){
@@ -118,7 +117,7 @@ public class PubMedService {
             year = dto.epubDate().substring(0, 4);
         }
 
-        article.setPublicationDate(year);
+        article.setPublicationYear(Integer.valueOf(year));
 
         article.setSource("PubMed");
 

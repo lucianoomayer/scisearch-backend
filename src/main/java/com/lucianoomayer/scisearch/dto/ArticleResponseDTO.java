@@ -1,12 +1,12 @@
 package com.lucianoomayer.scisearch.dto;
 
-import java.sql.Timestamp;
+import java.util.List;
 
 public record ArticleResponseDTO(
-        String articleId,
+        String externalId,
         String title,
         String url,
-        String publicationDate,
-        String source,
-        Timestamp favoriteAt
+        List<String> authors,
+        Integer publicationYear,
+        String source
 ) {}

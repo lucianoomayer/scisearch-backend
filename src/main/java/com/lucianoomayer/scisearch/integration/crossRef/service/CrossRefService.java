@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -37,8 +39,8 @@ public class CrossRefService {
                 .filter(dto -> dto.getTitle() != null && !dto.getTitle().isEmpty())
                 .map(this::mapToArticle)
                 .filter(article -> {
-                    if(article.getPublicationDate().isEmpty()) return true;
-                    int year = Integer.parseInt(article.getPublicationDate());
+                    //if(article.getPublicationDate().isEmpty()) return true;
+                    int year = article.getPublicationYear();
                     return (minYear == null || year >= minYear) &&
                             (maxYear == null || year <= maxYear);
                 });
@@ -51,9 +53,9 @@ public class CrossRefService {
                 ? dto.getTitle().get(0)
                 : null);
 
-        article.setArticleId(dto.getArticleId());
+        article.setExternalId(dto.getArticleId());
 
-        article.setArticleUrl(dto.getUrl());
+        article.setUrl(dto.getUrl());
 
         article.setAuthors(
                 dto.getAuthor() != null
@@ -61,15 +63,13 @@ public class CrossRefService {
                         : List.of()
         );
 
-        article.setAbstractText("");
-
         String publicationDate = "";
         if (dto.getPublishedOnline() != null) {
             publicationDate = dto.getPublishedOnline().extractYear();
         } else if (dto.getPublishedPrint() != null) {
             publicationDate = dto.getPublishedPrint().extractYear();
         }
-        article.setPublicationDate(publicationDate);
+        article.setPublicationYear(Integer.valueOf(publicationDate));
 
         article.setSource("CrossRef");
 
